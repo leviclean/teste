@@ -5363,27 +5363,31 @@ function app(){
       const pedeComLinhas=/(com.*linhas|linhas.*(ativ|aparec|volta)|ativ.*linhas|mostrar.*linhas)/.test(q);
       if(pedeSemLinhas){window.setCleanLines?.(false);return 'Removi as linhas do fundo e mantive o fundo normal.';}
       if(pedeComLinhas){window.setCleanLines?.(true);return 'Ativei novamente as linhas do fundo.';}
+      const pedir=/(abr|abrir|abra|abri|mostrar|mostra|mostre|exibir|exibe|exiba|ver|veja|verificar|acessar|acesse|entrar|entre|ir|vai|levar|leve|navegar|navegue|quero|preciso|me de|me mostre|me leve|gostaria)/;
+      const tem=(...termos)=>termos.some(t=>q.includes(t));
       const navegar=[
-        [/(novo chat|nova conversa|limpar conversa|zerar chat)/,'chat'],
-        [/(abrir|ir para|mostrar|entre em).*(config|configura)/,'config'],
-        [/(abrir|ir para|mostrar).*(painel|dashboard|inicio|início)/,'painel'],
-        [/(abrir|ir para|mostrar).*(buscar|captar|prospec)/,'scraper'],
-        [/(abrir|ir para|mostrar).*(leads|clientes)/,'leads'],
-        [/(abrir|ir para|mostrar).*(pipeline|funil)/,'pipeline'],
-        [/(abrir|ir para|mostrar).*(follow.?up|acompanh)/,'followups'],
-        [/(abrir|ir para|mostrar).*(mensagen|modelos)/,'mensagens'],
-        [/(abrir|ir para|mostrar).*(conversa|whatsapp)/,'conversas'],
-        [/(abrir|ir para|mostrar).*(automa|robô|robo)/,'automacao'],
-        [/(abrir|ir para|mostrar).*(campanha)/,'campanhas'],
-        [/(abrir|ir para|mostrar).*(script)/,'scripts']
+        ['chat',tem('novo chat','nova conversa','limpar conversa','zerar chat','comecar conversa','começar conversa')],
+        ['config',tem('config','preferencia','preferência','personalizacao','personalização')],
+        ['painel',tem('painel','dashboard','inicio','início','resumo geral')],
+        ['scraper',tem('buscar leads','captar leads','captacao','captação','prospeccao','prospecção','buscar empresas')],
+        ['leads',tem('lista de leads','meus leads','todos os leads','base de leads','cadastro de leads')],
+        ['pipeline',tem('pipeline','funil','kanban','etapas','negociacoes','negociações')],
+        ['followups',tem('follow up','follow-up','followup','acompanhamentos','pendencias','pendências','retornos')],
+        ['mensagens',tem('mensagens','modelos de mensagem','textos de abordagem','abordagens')],
+        ['conversas',tem('conversas','whatsapp','atendimento')],
+        ['automacao',tem('automacao','automação','robos','robôs','disparos automaticos','disparos automáticos')],
+        ['campanhas',tem('campanhas','campanha')],
+        ['scripts',tem('scripts','roteiros')]
       ];
-      for(const [reg,aba] of navegar){if(reg.test(q)){if(aba==='chat'){this.iaNovoChat();return 'Iniciei uma nova conversa.';}this.aba=aba;return `Abri a seção ${aba}.`;}}
-      if(/(todos os leads|limpar filtro|sem filtro|mostrar tudo)/.test(q)){this.aba='leads';this.busca='';this.filtrosPresenca=[];this.carregarLeads();return 'Removi os filtros e mostrei todos os leads.';}
-      if(/(com site|tem site|com website)/.test(q)){this.aba='leads';this.filtrosPresenca=['site'];this.carregarLeads();return 'Filtrei os leads com site.';}
-      if(/(sem telefone|não tem telefone|nao tem telefone)/.test(q)){this.aba='leads';this.filtrosPresenca=['sem_telefone'];this.carregarLeads();return 'Filtrei os leads sem telefone.';}
-      if(/(configurações|configuracoes|preferências|preferencias)/.test(q)){this.aba='config';return 'Abri as Configurações para você.';}
+      for(const [aba,temIntent] of navegar){if(temIntent&&(pedir.test(q)||q.length<40)){if(aba==='chat'){this.iaNovoChat();return 'Iniciei uma nova conversa.';}this.aba=aba;return `Abri ${aba==='pipeline'?'o Pipeline':aba==='scraper'?'Buscar Leads':`a seção ${aba}`}.`;}}
+      if(/^(meu |o |a )?(pipeline|funil)$/.test(q)||/\b(meu|minha) pipeline\b/.test(q)){this.aba='pipeline';return 'Abri o Pipeline para você.';}
+      if(tem('novo chat','nova conversa','limpar chat','limpa o chat')){this.iaNovoChat();return 'Iniciei uma nova conversa.';}
+      if(tem('todos os leads','limpar filtro','sem filtro','mostrar tudo')){this.aba='leads';this.busca='';this.filtrosPresenca=[];this.carregarLeads();return 'Removi os filtros e mostrei todos os leads.';}
+      if(tem('com site','tem site','com website','possui site')){this.aba='leads';this.filtrosPresenca=['site'];this.carregarLeads();return 'Filtrei os leads com site.';}
+      if(tem('sem telefone','nao tem telefone','não tem telefone','sem numero','sem número')){this.aba='leads';this.filtrosPresenca=['sem_telefone'];this.carregarLeads();return 'Filtrei os leads sem telefone.';}
+      if(tem('configuracoes','configurações','preferencias','preferências')){this.aba='config';return 'Abri as Configurações para você.';}
       if(/(troca|muda|alter|edita).*(meu nome|nome)/.test(q)){this.aba='config';return 'Abri as Configurações para você alterar seu nome.';}
-      if(/(testar|verificar).*(api|conexão|conexao|groq)/.test(q)){this.aba='config';setTimeout(()=>this.testarGroq?.(),0);return 'Abri as Configurações e iniciei o teste da conexão da IA.';}
+      if(/(testar|verificar).*(api|conexao|conexão|groq)/.test(q)){this.aba='config';setTimeout(()=>this.testarGroq?.(),0);return 'Abri as Configurações e iniciei o teste da conexão da IA.';}
       if(/(buscar|pesquisar|captar).*(lead|empresa)/.test(q)){this.aba='scraper';return 'Abri Buscar Leads para você iniciar uma captura.';}
       const etapa=q.match(/(?:mover|trocar|jogar|passar)[^\n]*?(?:lead|empresa)?\s*(.+?)\s+(?:para|em)\s+(abordad[oa]|contat[oa]|qualificad[oa]|fechad[oa]|descartad[oa]|nov[oa])/);
       if(etapa){const nomeBusca=etapa[1].replace(/^(o|a|um|uma|lead|empresa)\s+/,'').trim();const nomes={abordado:'contato',abordada:'contato',contato:'contato',contatada:'contato',qualificado:'qualificado',qualificada:'qualificado',fechado:'fechado',fechada:'fechado',descartado:'descartado',descartada:'descartado',novo:'novo',nova:'novo'};const col=nomes[etapa[2]]||'contato';const lead=this._allLeads().find(l=>String(l.nome||'').toLowerCase().includes(nomeBusca));if(!lead)return `Não encontrei um lead chamado “${nomeBusca}”.`;const patch=col==='descartado'?{status:'descartado',convertido:false,qualificado:false,em_contato:false,proximo_contato:null}:col==='fechado'?{status:'fechado',convertido:true,qualificado:false,em_contato:true,proximo_contato:null}:col==='qualificado'?{status:'qualificado',convertido:false,qualificado:true,em_contato:false}:col==='contato'?{status:'em_contato',convertido:false,qualificado:false,em_contato:true}:{status:'novo',convertido:false,qualificado:false,em_contato:false};this._updateLead(lead.id,patch);this.carregarLeads();this.aba='pipeline';return `Mudei ${lead.nome} para ${etapa[2]}.`;}
